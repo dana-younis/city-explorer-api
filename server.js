@@ -8,6 +8,12 @@ const PORT = process.env.PORT;
 server.use(cors());
 
 
+
+
+
+
+
+
 //http://localhost:3101/weather?city_name=Amman&lon=35.91&lat=31.95
 //http://localhost:3101/weather?city_name=Seattle&lon=-122.33207&lat=47.60621
 
@@ -48,36 +54,6 @@ class Forcecast {
 
 
 
-
-// server.use(cors());
-// function Forcecast(cityProp) {
-//    this.data=cityProp.detetime;
-//    this.description = cityProp.weather.description;
-
-// }
-
-// // http://localhost:3101/weather?description=Broken clouds
-// server.get('/weather', (req, res) => {
-
-//     // console.log(req.query)
-//     let Forcecast1=weatherData.data.map(city=>new Forcecast(city));
-//     res.send(Forcecast1);
-
-
-// })
-
-
-// http://localhost:3101/getCity?city_name=Amman
-// server.get('/getCity', (req, res) => {
-//     console.log(req.query)
-//     let locData= req.query.city_name
-//     let Items = weatherData.find(item => {
-//         if (item.city_name == locData)
-//             return item
-//     })
-//     res.send(Items)
-// })
-
 server.get('*', (req, res) => {
     res.status(404).send('not found');
 })
@@ -87,3 +63,43 @@ server.listen(PORT, () => {
 })
 
 
+
+
+
+
+
+
+
+
+
+
+server.get('/movie',function(req,res){
+    try{
+        const movieUrl =`https://api.themoviedb.org/3/search/movie?api_key=${MOVIE_API_KEY}&query=${req.query.query}`;
+        
+        
+        superagent.get(movieUrl).then(movieDbData=>{
+            const movieArray=movieDbData.body.results.map(data=> new Movie(data));
+            
+            res.send(movieArray)
+
+        }).catch(console.error)
+       
+    }
+    catch(error){
+        console.log(error)
+    }
+
+    })
+
+
+    
+class Movie{
+    constructor(data){
+        this.title=data.original_title;
+        this.image='http://image.tmdb.org/t/p/w342'+data.poster_path;
+        this.releaseDate=data.release_date;
+        this.rating=data.vote_average;
+
+    }
+}
