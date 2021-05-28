@@ -1,0 +1,51 @@
+const axios = require('axios');
+module.exports = movieHandler;
+
+
+let inMemoryMovie = {};
+
+function movieHandler(req, res) {
+    let movieQuery = req.query.city;
+    let key = process.env.MOVIE_API_KEY;
+
+    //http://localhost:3300/movie?city=Amman
+    // https://api.themoviedb.org/3/search/movie?api_key=8e55be751ee3652c36d5e098d8ce2f3e&query=seattle;
+    let movieUrl = `https://api.themoviedb.org/3/search/movie?api_key=${key}&query=${movieQuery}`;
+
+    if (inMemoryMovie[movieQuery] !== undefined) {
+        console.log('get the data from the Memory Movie')
+        response.send(inMemoryMovie[movieQuery])
+
+    } else {
+        console.log('get the data from the API');
+        
+        axios
+            .get(movieUrl)
+            .then(result => {
+                const movieArray = result.data.results.map(movieItem => {
+                    return new Movie(movieItem);
+
+                })
+                res.send(movieArray);
+                console.log('get the data from the Memory Movie')
+            })
+            .catch(err => {
+                res.status(500).send(`Movie data related to this city is not found ${err}`);
+            })
+    }
+
+
+
+}
+
+class Movie {
+    constructor(item) {
+        this.title = item.original_title;
+        this.overview = item.overview;
+        this.average_votes = item.vote_average;
+        this.total_votes = item.vote_count;
+        this.image_url = `https://image.tmdb.org/t/p/w500${item.poster_path}`;
+        this.popularity = item.popularity;
+        this.released_on = item.release_date;
+    }
+}

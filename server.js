@@ -1,11 +1,12 @@
 'use strict';
 require('dotenv').config();
-const cors = require('cors');
-const weatherData = require('./data/weatherData.json')
 const express = require('express');
+const cors = require('cors');
+const axios = require('axios');
 const server = express();
-const PORT = process.env.PORT;
 server.use(cors());
+const PORT = process.env.PORT;
+const weatherData = require('./data/weatherData.json');
 
 
 
@@ -14,92 +15,28 @@ server.use(cors());
 
 
 
-//http://localhost:3101/weather?city_name=Amman&lon=35.91&lat=31.95
-//http://localhost:3101/weather?city_name=Seattle&lon=-122.33207&lat=47.60621
-
-server.get('/weather', (req, res) => {
-    // console.log(req.query)
-    let city_name = req.query.city_name
-    let lat = req.query.lat;
-    let lon = req.query.lon;
-    let Forcecast1;
-
-    let Items = weatherData.find(item => {
-        if (item.city_name.toLowerCase() == city_name.toLowerCase() && item.lat == lat && item.lon == lon)
-                { Forcecast1 = new Forcecast(item);
-
-                    return item
-                   }
-
-    }
-
-    )
-    res.send(Forcecast1)
-})
 
 
-class Forcecast {
-    constructor(array) {
-        this.data = array.data.map(item => {
-            let lowTemp = "low of" + item.low_temp;
-            let highTemp = "high of" + item.max_temp;
-            return {
-                "description": lowTemp + highTemp + "with" + item.weather.description,
-                 "data": item.datetime
-            }
-        })
-    }
-}
+//http://localhost:3300/movie?city=Amman
+// https://api.themoviedb.org/3/search/movie?api_key=3db36bcfc99f611aef75cef6c6346ca9&query=seattle;
+const movieHandler = require('./Modules/Movies.js');
+server.get('/movie', movieHandler);
 
 
+//http://localhost:3300/weather?city=Amman
+//https://api.weatherbit.io/v2.0/forecast/daily?city=london&key=a08e3d69de0647cf8551c3a0297ed178
+const weatherHandler = require('./Modules/weather.js');
+server.get('/weather', weatherHandler);
 
 
 server.get('*', (req, res) => {
-    res.status(404).send('not found');
-})
+    res.send('not found');
+});
+
+
+
+
 
 server.listen(PORT, () => {
-    console.log(`Listening on PORT ${PORT}`);
+    console.log(`Listening to PORT ${PORT}`);
 })
-
-
-
-
-
-
-
-
-
-
-
-
-server.get('/movie',function(req,res){
-    try{
-        const movieUrl =`https://api.themoviedb.org/3/search/movie?api_key=${MOVIE_API_KEY}&query=${req.query.query}`;
-        
-        
-        superagent.get(movieUrl).then(movieDbData=>{
-            const movieArray=movieDbData.body.results.map(data=> new Movie(data));
-            
-            res.send(movieArray)
-
-        }).catch(console.error)
-       
-    }
-    catch(error){
-        console.log(error)
-    }
-
-    })
-
-
-    
-class Movie{
-    constructor(data){
-        this.title=data.original_title;
-        this.image='http://image.tmdb.org/t/p/w342'+data.poster_path;
-        this.releaseDate=data.release_date;
-        this.rating=data.vote_average;
-
-    }
-}
